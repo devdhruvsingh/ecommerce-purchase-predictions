@@ -28,3 +28,10 @@ data/processed/
 # IDE settings
 .vscode/
 .idea/
+
+# Python packaging artifacts
+*.egg-info/
+
+# macOS metadata
+Icon
+Icon?
