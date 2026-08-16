@@ -1,0 +1,30 @@
+# Virtual environment
+.venv/
+
+# Environment variables / secrets
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Generated model files
+models/trained/
+models/artifacts/
+
+# Generated data
+data/interim/
+data/processed/
+
+# IDE settings
+.vscode/
+.idea/
