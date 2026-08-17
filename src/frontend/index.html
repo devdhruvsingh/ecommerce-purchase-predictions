@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>E-Commerce Purchase Prediction</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>E-Commerce Purchase Prediction</h1>
+
+        <p class="description">
+            Enter the visitor session information to predict
+            the likelihood of a purchase.
+        </p>
+
+
+        <form id="predictionForm">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="Administrative">
+                        Administrative
+                    </label>
+
+                    <input
+                        type="number"
+                        id="Administrative"
+                        step="any"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="Administrative_Duration">
+                        Administrative Duration
+                    </label>
+
+                    <input
+                        type="number"
+                        id="Administrative_Duration"
+                        step="any"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="Informational">
+                        Informational
+                    </label>
+
+                    <input
+                        type="number"
+                        id="Informational"
+                        step="any"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="Informational_Duration">
+                        Informational Duration
+                    </label>
+
+                    <input
+                        type="number"
+                        id="Informational_Duration"
+                        step="any"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="ProductRelated">
+                        Product Related
+                    </label>
+
+                    <input
+                        type="number"
+                        id="ProductRelated"
+                        step="any"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="ProductRelated_Duration">
+                        Product Related Duration
+                    </label>
+
+                    <input
+                        type="number"
+                        id="ProductRelated_Duration"
+                        step="any"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="BounceRates">
+                        Bounce Rate
+                    </label>
+
+                    <input
+                        type="number"
+                        id="BounceRates"
+                        step="any"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="ExitRates">
+                        Exit Rate
+                    </label>
+
+                    <input
+                        type="number"
+                        id="ExitRates"
+                        step="any"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="PageValues">
+                        Page Values
+                    </label>
+
+                    <input
+                        type="number"
+                        id="PageValues"
+                        step="any"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="SpecialDay">
+                        Special Day
+                    </label>
+
+                    <input
+                        type="number"
+                        id="SpecialDay"
+                        step="any"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="Month">
+                        Month
+                    </label>
+
+                    <select id="Month" required>
+                        <option value="">Select Month</option>
+                        <option value="Feb">February</option>
+                        <option value="Mar">March</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="Jul">July</option>
+                        <option value="Aug">August</option>
+                        <option value="Sep">September</option>
+                        <option value="Oct">October</option>
+                        <option value="Nov">November</option>
+                        <option value="Dec">December</option>
+                    </select>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="OperatingSystems">
+                        Operating System
+                    </label>
+
+                    <input
+                        type="number"
+                        id="OperatingSystems"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="Browser">
+                        Browser
+                    </label>
+
+                    <input
+                        type="number"
+                        id="Browser"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="Region">
+                        Region
+                    </label>
+
+                    <input
+                        type="number"
+                        id="Region"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="TrafficType">
+                        Traffic Type
+                    </label>
+
+                    <input
+                        type="number"
+                        id="TrafficType"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="VisitorType">
+                        Visitor Type
+                    </label>
+
+                    <select id="VisitorType" required>
+                        <option value="">Select Visitor Type</option>
+                        <option value="Returning_Visitor">
+                            Returning Visitor
+                        </option>
+
+                        <option value="New_Visitor">
+                            New Visitor
+                        </option>
+
+                        <option value="Other">
+                            Other
+                        </option>
+                    </select>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="Weekend">
+                        Weekend
+                    </label>
+
+                    <select id="Weekend" required>
+                        <option value="">Select</option>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                    </select>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="TotalPages">
+                        Total Pages
+                    </label>
+
+                    <input
+                        type="number"
+                        id="TotalPages"
+                        step="any"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="TotalDuration">
+                        Total Duration
+                    </label>
+
+                    <input
+                        type="number"
+                        id="TotalDuration"
+                        step="any"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="AvgTimePerPage">
+                        Average Time Per Page
+                    </label>
+
+                    <input
+                        type="number"
+                        id="AvgTimePerPage"
+                        step="any"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="ProductEngagementRatio">
+                        Product Engagement Ratio
+                    </label>
+
+                    <input
+                        type="number"
+                        id="ProductEngagementRatio"
+                        step="any"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="ProductTimeRatio">
+                        Product Time Ratio
+                    </label>
+
+                    <input
+                        type="number"
+                        id="ProductTimeRatio"
+                        step="any"
+                        required
+                    >
+                </div>
+
+            </div>
+
+
+            <button type="submit">
+                Predict Purchase
+            </button>
+
+        </form>
+
+
+        <div id="result" class="result hidden">
+
+            <h2>Prediction Result</h2>
+
+            <p id="prediction"></p>
+
+            <p id="probability"></p>
+
+        </div>
+
+
+        <div id="error" class="error hidden"></div>
+
+    </div>
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
