@@ -6,6 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "ecommerce-purchase-predictions"
 version = "0.1.0"
 description = "E-commerce customer purchase prediction machine learning project"
+dependencies = [
+    "flask"
+]
 
 [tool.setuptools.packages.find]
 where = ["."]
