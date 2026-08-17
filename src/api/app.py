@@ -39,22 +39,46 @@ REQUIRED_FEATURES = [
     "ProductTimeRatio"]
 
 
-@app.route("/")
-def home():
-    return "E-Commerce Purchase Prediction API is running"
-
-@app.route("/predict", methods=["POST"])
-def predicts():
+@app.route("/predict", methods = ["POST"])
+def predict():
+    # getting the json data
     data = request.get_json()
+
+    if not data:
+        return jsonify({
+            "error": "No JSON data provided"
+
+        }), 400
+
+    # for missing features
+    missing_features = [
+        feature for feature in REQUIRED_FEATURES
+        if feature not in data
+    ]
+    if missing_features:
+        return jsonify({
+            "error" : "Missing required information",
+            "missing_features": missing_features
+        }), 400
+
     input_data = pd.DataFrame([data])
 
-    prediction = model.predict(input_data)[0]
-    probability = model.predict_proba(input_data)[0][1]
+    try :
+        # making the prediction
+        prediction = model.predict(input_data)[0]
 
-    return jsonify({
-        "prediction" : bool(prediction),
-        "purchase_probability" : float(probability)
-                })
+        probability = model.predict_prob(input_data)[0][1]
+
+        return jsonify({
+            "prediction": bool(prediction),
+            "purchase prediction": float(probability)
+        })
+
+    except Exception as error:
+        return jsonify({
+            "error": "Prediction failed",
+            "details": str(error)
+        }), 400
 
 if __name__ == "__main__":
     app.run(debug=True)
