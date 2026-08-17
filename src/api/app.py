@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import joblib
 import pandas as pd
 from pathlib import Path
@@ -6,7 +7,7 @@ import math
 
 
 app = Flask(__name__)
-
+CORS(app)
 
 # find the project root
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
