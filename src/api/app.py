@@ -2,9 +2,11 @@ from flask import Flask, request, jsonify
 import joblib
 import pandas as pd
 from pathlib import Path
+import math
 
 
 app = Flask(__name__)
+
 
 # find the project root
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -98,16 +100,29 @@ def home():
 def predict():
 
     # getting the json data
-    try :
+    try:
         data = request.get_json()
     except Exception:
         return jsonify({
             "error": "Invalid JSON data"
         }), 400
 
-    if not data:
+    # checking if json data was provided
+    if data is None:
         return jsonify({
             "error": "No JSON data provided"
+        }), 400
+
+    # checking if the json data is an object
+    if not isinstance(data, dict):
+        return jsonify({
+            "error": "JSON data must be an object"
+        }), 400
+
+    # checking if json object is empty
+    if len(data) == 0:
+        return jsonify({
+            "error": "Empty JSON object"
         }), 400
 
 
@@ -127,12 +142,23 @@ def predict():
     # checking numeric values
     for feature in NUMERIC_NON_NEGATIVE:
 
-        if not isinstance(data[feature], (int, float)):
+        value = data[feature]
+
+        # bool is technically an int in Python,
+        # so explicitly reject it
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
             return jsonify({
                 "error": f"{feature} must be a number"
             }), 400
 
-        if data[feature] < 0:
+        # checking NaN and infinity
+        if not math.isfinite(value):
+            return jsonify({
+                "error": f"{feature} must be a finite number"
+            }), 400
+
+        # checking negative values
+        if value < 0:
             return jsonify({
                 "error": f"{feature} cannot be negative"
             }), 400
@@ -141,18 +167,30 @@ def predict():
     # checking rate values
     for feature in RATE_FEATURES:
 
-        if not isinstance(data[feature], (int, float)):
+        value = data[feature]
+
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
             return jsonify({
                 "error": f"{feature} must be a number"
             }), 400
 
-        if not 0 <= data[feature] <= 1:
+        if not math.isfinite(value):
+            return jsonify({
+                "error": f"{feature} must be a finite number"
+            }), 400
+
+        if not 0 <= value <= 1:
             return jsonify({
                 "error": f"{feature} must be between 0 and 1"
             }), 400
 
 
     # checking month
+    if not isinstance(data["Month"], str):
+        return jsonify({
+            "error": "Month must be a string"
+        }), 400
+
     if data["Month"] not in VALID_MONTHS:
         return jsonify({
             "error": "Invalid Month",
@@ -161,6 +199,11 @@ def predict():
 
 
     # checking visitor type
+    if not isinstance(data["VisitorType"], str):
+        return jsonify({
+            "error": "VisitorType must be a string"
+        }), 400
+
     if data["VisitorType"] not in VALID_VISITOR_TYPES:
         return jsonify({
             "error": "Invalid VisitorType",
