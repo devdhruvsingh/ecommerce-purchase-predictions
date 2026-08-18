@@ -1,160 +1,87 @@
-const form = document.getElementById("predictionForm");
+const API_URL = "https://ecommerce-purchase-api.onrender.com/predict";
 
-const result = document.getElementById("result");
-const predictionText = document.getElementById("prediction");
-const probabilityText = document.getElementById("probability");
-
-const error = document.getElementById("error");
-
+const form = document.getElementById("prediction-form");
+const resultContainer = document.getElementById("result");
+const predictionElement = document.getElementById("prediction");
+const probabilityElement = document.getElementById("probability");
+const errorElement = document.getElementById("error");
 
 form.addEventListener("submit", async function (event) {
-
     event.preventDefault();
 
-    result.classList.add("hidden");
-    error.classList.add("hidden");
+    // Hide previous result messages
+    resultContainer.classList.add("hidden");
+    errorElement.classList.add("hidden");
 
+    // Get form data
+    const formData = new FormData(form);
 
-    const data = {
-
-        Administrative: Number(
-            document.getElementById("Administrative").value
-        ),
-
-        Administrative_Duration: Number(
-            document.getElementById("Administrative_Duration").value
-        ),
-
-        Informational: Number(
-            document.getElementById("Informational").value
-        ),
-
-        Informational_Duration: Number(
-            document.getElementById("Informational_Duration").value
-        ),
-
-        ProductRelated: Number(
-            document.getElementById("ProductRelated").value
-        ),
-
-        ProductRelated_Duration: Number(
-            document.getElementById("ProductRelated_Duration").value
-        ),
-
-        BounceRates: Number(
-            document.getElementById("BounceRates").value
-        ),
-
-        ExitRates: Number(
-            document.getElementById("ExitRates").value
-        ),
-
-        PageValues: Number(
-            document.getElementById("PageValues").value
-        ),
-
-        SpecialDay: Number(
-            document.getElementById("SpecialDay").value
-        ),
-
-        Month: document.getElementById("Month").value,
-
-        OperatingSystems: Number(
-            document.getElementById("OperatingSystems").value
-        ),
-
-        Browser: Number(
-            document.getElementById("Browser").value
-        ),
-
-        Region: Number(
-            document.getElementById("Region").value
-        ),
-
-        TrafficType: Number(
-            document.getElementById("TrafficType").value
-        ),
-
-        VisitorType: document.getElementById("VisitorType").value,
-
-        Weekend:
-            document.getElementById("Weekend").value === "true",
-
-        TotalPages: Number(
-            document.getElementById("TotalPages").value
-        ),
-
-        TotalDuration: Number(
-            document.getElementById("TotalDuration").value
-        ),
-
-        AvgTimePerPage: Number(
-            document.getElementById("AvgTimePerPage").value
-        ),
-
-        ProductEngagementRatio: Number(
-            document.getElementById("ProductEngagementRatio").value
-        ),
-
-        ProductTimeRatio: Number(
-            document.getElementById("ProductTimeRatio").value
-        )
+    // Safely extract numeric and string fields
+    const getNum = (key) => {
+        const val = formData.get(key);
+        return val !== null && val !== "" ? Number(val) : 0;
     };
 
+    const getStr = (key) => (formData.get(key) || "").toString();
+
+    // Create payload object matching the backend model inputs
+    const data = {
+        Administrative: getNum("Administrative"),
+        Administrative_Duration: getNum("Administrative_Duration"),
+        Informational: getNum("Informational"),
+        Informational_Duration: getNum("Informational_Duration"),
+        ProductRelated: getNum("ProductRelated"),
+        ProductRelated_Duration: getNum("ProductRelated_Duration"),
+        BounceRates: getNum("BounceRates"),
+        ExitRates: getNum("ExitRates"),
+        PageValues: getNum("PageValues"),
+        SpecialDay: getNum("SpecialDay"),
+        Month: getStr("Month"),
+        OperatingSystems: getNum("OperatingSystems"),
+        Browser: getNum("Browser"),
+        Region: getNum("Region"),
+        TrafficType: getNum("TrafficType"),
+        VisitorType: getStr("VisitorType"),
+        Weekend: formData.get("Weekend") === "true" || formData.get("Weekend") === "on",
+        TotalPages: getNum("TotalPages"),
+        TotalDuration: getNum("TotalDuration"),
+        AvgTimePerPage: getNum("AvgTimePerPage"),
+        ProductEngagementRatio: getNum("ProductEngagementRatio"),
+        ProductTimeRatio: getNum("ProductTimeRatio")
+    };
 
     try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
 
-        const response = await fetch(
-            "https://ecommerce-purchase-api.onrender.com",
-            {
-                method: "POST",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify(data)
-            }
-        );
-
-
-        const responseData = await response.json();
-
+        // Parse json payload safely
+        const result = await response.json();
 
         if (!response.ok) {
-
-            error.textContent =
-                responseData.error || "Something went wrong.";
-
-            error.classList.remove("hidden");
-
-            return;
+            throw new Error(result.error || result.message || `HTTP ${response.status} Error`);
         }
 
+        // Display prediction statement
+        const isPurchase = result.prediction === true || result.prediction === 1;
+        predictionElement.textContent = isPurchase ? "Purchase Likely" : "Purchase Unlikely";
 
-        predictionText.textContent =
-            responseData.prediction
-                ? "Purchase predicted: YES"
-                : "Purchase predicted: NO";
+        // Display probability score safely
+        const rawProb = result.purchase_probability ?? result.probability ?? 0;
+        const probability = Number(rawProb) * 100;
+        probabilityElement.textContent = `Purchase Probability: ${probability.toFixed(2)}%`;
 
+        // Show result section
+        resultContainer.classList.remove("hidden");
 
-        probabilityText.textContent =
-            "Purchase probability: " +
-            (responseData.purchase_probability * 100).toFixed(2) +
-            "%";
+    } catch (error) {
+        console.error("Prediction API Error:", error);
 
-
-        result.classList.remove("hidden");
-
+        errorElement.textContent = `Error: ${error.message}`;
+        errorElement.classList.remove("hidden");
     }
-
-    catch (err) {
-
-        error.textContent =
-            "Could not connect to the prediction API.";
-
-        error.classList.remove("hidden");
-
-    }
-
 });

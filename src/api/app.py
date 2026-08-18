@@ -3,21 +3,25 @@ from flask_cors import CORS
 import joblib
 import pandas as pd
 from pathlib import Path
-import math
 
 
 app = Flask(__name__)
+
+# Allow the frontend to communicate with the API
 CORS(app)
 
-# find the project root
+
+# Find the project root
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-# loading the trained ml pipeline
+
+# Load the trained ML pipeline
 MODEL_PATH = PROJECT_ROOT / "models" / "purchase_prediction_pipeline.pkl"
 
 model = joblib.load(MODEL_PATH)
 
 
+# Required features
 REQUIRED_FEATURES = [
     "Administrative",
     "Administrative_Duration",
@@ -44,26 +48,7 @@ REQUIRED_FEATURES = [
 ]
 
 
-NUMERIC_NON_NEGATIVE = [
-    "Administrative",
-    "Administrative_Duration",
-    "Informational",
-    "Informational_Duration",
-    "ProductRelated",
-    "ProductRelated_Duration",
-    "PageValues",
-    "OperatingSystems",
-    "Browser",
-    "Region",
-    "TrafficType",
-    "TotalPages",
-    "TotalDuration",
-    "AvgTimePerPage",
-    "ProductEngagementRatio",
-    "ProductTimeRatio"
-]
-
-
+# Features that must be between 0 and 1
 RATE_FEATURES = [
     "BounceRates",
     "ExitRates",
@@ -71,6 +56,7 @@ RATE_FEATURES = [
 ]
 
 
+# Valid categorical values
 VALID_MONTHS = [
     "Feb",
     "Mar",
@@ -92,44 +78,36 @@ VALID_VISITOR_TYPES = [
 ]
 
 
-@app.route("/")
+# Home route
+@app.route("/", methods=["GET"])
 def home():
-    return "E-Commerce Purchase Prediction API is running!"
+    return jsonify({
+        "message": "E-Commerce Purchase Prediction API is running!"
+    })
 
 
+# Prediction route
 @app.route("/predict", methods=["POST"])
 def predict():
 
-    # getting the json data
-    try:
-        data = request.get_json()
-    except Exception:
+    # Get JSON data
+    data = request.get_json(silent=True)
+
+    if data is None:
         return jsonify({
             "error": "Invalid JSON data"
         }), 400
 
-    # checking if json data was provided
-    if data is None:
+    if not data:
         return jsonify({
             "error": "No JSON data provided"
         }), 400
 
-    # checking if the json data is an object
-    if not isinstance(data, dict):
-        return jsonify({
-            "error": "JSON data must be an object"
-        }), 400
 
-    # checking if json object is empty
-    if len(data) == 0:
-        return jsonify({
-            "error": "Empty JSON object"
-        }), 400
-
-
-    # checking for missing features
+    # Check missing features
     missing_features = [
-        feature for feature in REQUIRED_FEATURES
+        feature
+        for feature in REQUIRED_FEATURES
         if feature not in data
     ]
 
@@ -140,95 +118,78 @@ def predict():
         }), 400
 
 
-    # checking numeric values
-    for feature in NUMERIC_NON_NEGATIVE:
+    # Check numeric features
+    numeric_features = [
+        feature
+        for feature in REQUIRED_FEATURES
+        if feature not in ["Month", "VisitorType", "Weekend"]
+    ]
 
-        value = data[feature]
+    for feature in numeric_features:
 
-        # bool is technically an int in Python,
-        # so explicitly reject it
-        if isinstance(value, bool) or not isinstance(value, (int, float)):
+        if not isinstance(data[feature], (int, float)):
             return jsonify({
-                "error": f"{feature} must be a number"
-            }), 400
-
-        # checking NaN and infinity
-        if not math.isfinite(value):
-            return jsonify({
-                "error": f"{feature} must be a finite number"
-            }), 400
-
-        # checking negative values
-        if value < 0:
-            return jsonify({
-                "error": f"{feature} cannot be negative"
+                "error": "Invalid data type",
+                "feature": feature,
+                "expected": "number"
             }), 400
 
 
-    # checking rate values
+        # Check negative values
+        if data[feature] < 0:
+            return jsonify({
+                "error": "Negative values are not allowed",
+                "feature": feature
+            }), 400
+
+
+    # Check rate features
     for feature in RATE_FEATURES:
 
-        value = data[feature]
-
-        if isinstance(value, bool) or not isinstance(value, (int, float)):
+        if data[feature] < 0 or data[feature] > 1:
             return jsonify({
-                "error": f"{feature} must be a number"
-            }), 400
-
-        if not math.isfinite(value):
-            return jsonify({
-                "error": f"{feature} must be a finite number"
-            }), 400
-
-        if not 0 <= value <= 1:
-            return jsonify({
-                "error": f"{feature} must be between 0 and 1"
+                "error": "Invalid rate value",
+                "feature": feature,
+                "expected": "value between 0 and 1"
             }), 400
 
 
-    # checking month
-    if not isinstance(data["Month"], str):
-        return jsonify({
-            "error": "Month must be a string"
-        }), 400
-
+    # Check Month
     if data["Month"] not in VALID_MONTHS:
         return jsonify({
-            "error": "Invalid Month",
-            "allowed_values": VALID_MONTHS
+            "error": "Invalid month",
+            "valid_months": VALID_MONTHS
         }), 400
 
 
-    # checking visitor type
-    if not isinstance(data["VisitorType"], str):
-        return jsonify({
-            "error": "VisitorType must be a string"
-        }), 400
-
+    # Check VisitorType
     if data["VisitorType"] not in VALID_VISITOR_TYPES:
         return jsonify({
-            "error": "Invalid VisitorType",
-            "allowed_values": VALID_VISITOR_TYPES
+            "error": "Invalid visitor type",
+            "valid_visitor_types": VALID_VISITOR_TYPES
         }), 400
 
 
-    # checking weekend
+    # Check Weekend
     if not isinstance(data["Weekend"], bool):
         return jsonify({
-            "error": "Weekend must be true or false"
+            "error": "Invalid Weekend value",
+            "expected": "true or false"
         }), 400
 
 
-    # converting the data into dataframe
+    # Create dataframe
     input_data = pd.DataFrame([data])
 
 
     try:
 
-        # making the prediction
+        # Make prediction
         prediction = model.predict(input_data)[0]
 
+        # Get purchase probability
         probability = model.predict_proba(input_data)[0][1]
+
 
         return jsonify({
             "prediction": bool(prediction),
@@ -241,8 +202,8 @@ def predict():
         return jsonify({
             "error": "Prediction failed",
             "details": str(error)
-        }), 400
+        }), 500
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
